@@ -1,0 +1,42 @@
+@startuml
+title Sistema de Aluguel de Carros - Diagrama de Pacotes
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+left to right direction
+
+package "Frontend - React + Vite" {
+  package "pages" as Pages
+  package "components" as Components
+  package "services" as FrontServices
+}
+
+package "Backend - Spring Boot" {
+
+  package "controller" as Controller
+  package "service" as Service
+  package "repository" as Repository
+  package "model" as Model
+  package "dto" as DTO
+  package "security" as Security
+
+}
+
+database "Supabase\n(PostgreSQL)" as DB
+
+Pages ..> Components : utiliza
+Pages ..> FrontServices : requisicoes
+
+FrontServices ..> Controller : HTTP / REST
+
+Controller ..> Service : chama
+Controller ..> DTO : utiliza
+Controller ..> Security : autenticacao
+
+Service ..> Repository : acessa
+Service ..> Model : manipula
+
+Repository ..> Model : persiste
+Repository ..> DB : SQL / JPA
+
+@enduml

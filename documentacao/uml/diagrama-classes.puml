@@ -1,0 +1,192 @@
+
+@startuml
+title Sistema de Aluguel de Carros - Diagrama de Classes
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+hide empty methods
+
+' ========================================
+' USUARIOS E AUTENTICACAO
+' ========================================
+
+class Usuario {
+  - id: Long
+  - login: String
+  - senhaHash: String
+  - perfil: PerfilUsuario
+}
+
+enum PerfilUsuario {
+  CLIENTE
+  EMPRESA
+  BANCO
+}
+
+class Cliente {
+  - id: Long
+  - rg: String
+  - cpf: String
+  - nome: String
+  - endereco: String
+  - profissao: String
+}
+
+class EntidadeEmpregadora {
+  - id: Long
+  - nome: String
+  - rendimento: BigDecimal
+}
+
+abstract class Agente {
+  - id: Long
+  - nome: String
+}
+
+class Empresa {
+}
+
+class Banco {
+}
+
+' ========================================
+' AUTOMOVEIS E PROPRIEDADE
+' ========================================
+
+class Automovel {
+  - id: Long
+  - matricula: String
+  - ano: Integer
+  - marca: String
+  - modelo: String
+  - placa: String
+}
+
+class PropriedadeAutomovel {
+  - id: Long
+  - tipoProprietario: TipoProprietario
+}
+
+enum TipoProprietario {
+  CLIENTE
+  EMPRESA
+  BANCO
+}
+
+' ========================================
+' PEDIDOS DE ALUGUEL
+' ========================================
+
+class PedidoAluguel {
+  - id: Long
+  - dataPedido: LocalDate
+  - status: StatusPedido
+}
+
+enum StatusPedido {
+  PENDENTE
+  EM_ANALISE
+  APROVADO
+  REJEITADO
+  CANCELADO
+  CONTRATADO
+}
+
+class AvaliacaoFinanceira {
+  - id: Long
+  - dataAvaliacao: LocalDate
+  - parecer: ParecerFinanceiro
+  - observacao: String
+}
+
+enum ParecerFinanceiro {
+  POSITIVO
+  NEGATIVO
+}
+
+' ========================================
+' CONTRATOS
+' ========================================
+
+class Contrato {
+  - id: Long
+  - dataInicio: LocalDate
+  - dataFim: LocalDate
+}
+
+class ContratoCredito {
+  - id: Long
+  - valorCredito: BigDecimal
+  - dataConcessao: LocalDate
+}
+
+' ========================================
+' RELACIONAMENTOS - USUARIOS
+' ========================================
+
+Usuario --> PerfilUsuario
+
+Usuario "1" -- "0..1" Cliente : acesso
+Usuario "1" -- "0..1" Agente : acesso
+
+note right of Usuario
+  Cada usuario deve estar associado
+  exclusivamente a um Cliente
+  ou a um Agente, conforme o perfil.
+end note
+
+Agente <|-- Empresa
+Agente <|-- Banco
+
+Cliente "1" *-- "0..3" EntidadeEmpregadora : empregadores
+
+' ========================================
+' RELACIONAMENTOS - PEDIDOS
+' ========================================
+
+Cliente "1" -- "0..*" PedidoAluguel : realiza
+
+PedidoAluguel "0..*" --> "1" Automovel : solicita
+
+PedidoAluguel --> StatusPedido
+
+PedidoAluguel "1" -- "0..*" AvaliacaoFinanceira : recebe
+
+Agente "1" -- "0..*" AvaliacaoFinanceira : realiza
+
+AvaliacaoFinanceira --> ParecerFinanceiro
+
+' ========================================
+' RELACIONAMENTOS - CONTRATOS
+' ========================================
+
+PedidoAluguel "1" -- "0..1" Contrato : origina
+
+Contrato "0..*" --> "1" Automovel : automovel
+
+Contrato "1" -- "0..1" ContratoCredito : possui
+
+Banco "1" -- "0..*" ContratoCredito : concede
+
+' ========================================
+' RELACIONAMENTOS - PROPRIEDADE
+' ========================================
+
+Contrato "1" -- "1" PropriedadeAutomovel : define
+
+PropriedadeAutomovel --> TipoProprietario
+
+PropriedadeAutomovel "0..*" --> "1" Automovel : identifica
+
+note right of PropriedadeAutomovel
+  O proprietario pode ser
+  Cliente, Empresa ou Banco,
+  dependendo do contrato.
+
+  A identificacao especifica
+  do proprietario sera detalhada
+  na implementacao.
+end note
+
+@enduml
