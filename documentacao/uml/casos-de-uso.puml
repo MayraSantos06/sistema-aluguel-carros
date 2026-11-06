@@ -1,47 +1,32 @@
-
 @startuml
 left to right direction
-
-skinparam packageStyle rectangle
-skinparam shadowing false
-
-title Sistema de Aluguel de Carros - Casos de Uso
-
 actor Cliente
 actor Empresa
 actor Banco
-
-rectangle "Sistema de Aluguel de Carros" {
-
-  usecase "Cadastrar usuário" as UC01
-  usecase "Realizar login" as UC02
-  usecase "Criar pedido" as UC03
-  usecase "Consultar pedido" as UC04
-  usecase "Modificar pedido" as UC05
-  usecase "Cancelar pedido" as UC06
-  usecase "Avaliar pedido" as UC07
-  usecase "Registrar contrato\nde crédito" as UC08
-
+actor "Agente autorizado" as Agente
+Empresa --|> Agente
+Banco --|> Agente
+rectangle "Vélora" {
+  usecase "Cadastrar conta" as Cadastro
+  usecase "Entrar com usuário e senha" as Login
+  usecase "Gerenciar próprio cadastro\ne empregadores" as Perfil
+  usecase "Consultar automóveis" as Catalogo
+  usecase "Gerenciar frota" as Frota
+  usecase "Criar, consultar, editar ou\ncancelar próprios pedidos" as Pedidos
+  usecase "Consultar e editar pedidos" as Gestao
+  usecase "Registrar parecer financeiro" as Avaliacao
+  usecase "Formalizar e consultar contrato\ne registrar propriedade" as Contrato
+  usecase "Vincular contrato de crédito" as Credito
 }
-
-Cliente -- UC01
-Cliente -- UC02
-Cliente -- UC03
-Cliente -- UC04
-Cliente -- UC05
-Cliente -- UC06
-
-Empresa -- UC01
-Empresa -- UC02
-Empresa -- UC04
-Empresa -- UC05
-Empresa -- UC07
-
-Banco -- UC01
-Banco -- UC02
-Banco -- UC04
-Banco -- UC05
-Banco -- UC07
-Banco -- UC08
-
+Cliente -- Cadastro
+Cliente -- Login
+Cliente -- Perfil
+Cliente -- Catalogo
+Cliente -- Pedidos
+Empresa -- Frota
+Agente -- Login
+Agente -- Gestao
+Agente -- Avaliacao
+Agente -- Contrato
+Banco -- Credito
 @enduml

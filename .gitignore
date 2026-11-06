@@ -1,0 +1,33 @@
+# Variáveis de ambiente e credenciais
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Dependências e builds do frontend
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+/frontend/src-backup/
+/frontend/src/index-backup.css.txt
+
+# Builds do Java
+target/
+build/
+
+# Logs e arquivos temporários
+*.log
+*.log.*
+erro-*.txt
+revisao-backend.txt
+npm-debug.log*
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.iml
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

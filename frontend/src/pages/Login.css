@@ -1,0 +1,148 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-family: Arial, sans-serif;
+}
+
+.login-intro {
+  background: linear-gradient(145deg, #101d32, #203b5c);
+  color: white;
+  padding: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-brand {
+  position: absolute;
+  top: 45px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.login-brand span {
+  color: #56b5ff;
+}
+
+.login-intro h1 {
+  font-size: clamp(36px, 4vw, 58px);
+  line-height: 1.12;
+  max-width: 550px;
+  margin-bottom: 22px;
+}
+
+.login-intro p {
+  color: #c3d2e4;
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 450px;
+}
+
+.login-decoration {
+  font-size: 100px;
+  margin-top: 45px;
+}
+
+.login-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 35px;
+  background: #f8fafc;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-eyebrow {
+  color: #2876b8;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.login-form h2 {
+  font-size: 32px;
+  color: #14243a;
+  margin: 12px 0;
+}
+
+.login-form p {
+  color: #64748b;
+  margin-bottom: 35px;
+}
+
+.login-form label {
+  color: #334155;
+  font-weight: 600;
+  margin-bottom: 9px;
+}
+
+.login-form input {
+  padding: 15px;
+  margin-bottom: 22px;
+  border: 1px solid #d5deea;
+  border-radius: 9px;
+  font-size: 15px;
+  background: white;
+  color: #14243a;
+}
+
+.login-form input:focus {
+  outline: 2px solid #56b5ff;
+  border-color: transparent;
+}
+
+.login-form button {
+  background: #2563eb;
+  color: white;
+  padding: 16px;
+  border: none;
+  border-radius: 9px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.login-form button:hover {
+  background: #1d4ed8;
+}
+
+.login-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.login-error {
+  color: #b91c1c;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 800px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-intro {
+    padding: 45px 30px;
+  }
+
+  .login-brand {
+    position: static;
+    margin-bottom: 35px;
+  }
+
+  .login-decoration {
+    display: none;
+  }
+
+  .login-panel {
+    padding: 50px 25px;
+  }
+}
