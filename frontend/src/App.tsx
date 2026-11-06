@@ -2171,10 +2171,10 @@ function BankAnalysis({
       <div className="alert neutral">
         <Icon name="shield" />Confira os dados do contratante antes de registrar o parecer.
       </div>
-      <div className="button-row" role="group" aria-label="Filtrar pedidos">
-        <button type="button" className={`btn btn-${historico ? "secondary" : "primary"}`}
+      <div className="button-row bank-analysis-filters" role="group" aria-label="Filtrar pedidos">
+        <button type="button" className="btn"
           aria-pressed={!historico} onClick={() => setHistorico(false)}>Pendentes ({pendentes.length})</button>
-        <button type="button" className={`btn btn-${historico ? "primary" : "secondary"}`}
+        <button type="button" className="btn"
           aria-pressed={historico} onClick={() => setHistorico(true)}>Histórico ({decididos.length})</button>
       </div>
       <section className="panel bank-analysis-results">

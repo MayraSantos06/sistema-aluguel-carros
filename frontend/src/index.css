@@ -1594,6 +1594,19 @@ td > strong {
 .bank-analysis-results {
   margin-top: 18px;
 }
+.bank-analysis-filters .btn {
+  background: #fff;
+  border-color: #7b8291;
+  color: #252d40;
+}
+.bank-analysis-filters .btn:hover {
+  background: #e9edfb;
+}
+.bank-analysis-filters .btn[aria-pressed="true"] {
+  background: #2749b9;
+  border-color: #2749b9;
+  color: #fff;
+}
 .review-observation {
   grid-column: 1 / -1;
   overflow-wrap: anywhere;
