@@ -4,7 +4,7 @@ Protótipo web do Laboratório 02 de Desenvolvimento e Integração de Aplicaç�
 
 ## Status
 
-Protótipo acadêmico com fluxos de cliente, empresa e banco. O catálogo usa imagens ilustrativas.
+Protótipo acadêmico com fluxos de cliente, empresa e banco. O catálogo de demonstração inclui fotos dos cinco modelos raros. Os demais veículos usam uma imagem ilustrativa.
 
 ## Funcionalidades
 
@@ -77,6 +77,8 @@ Abra `http://localhost:5173`. O Vite encaminha as rotas `/api` ao backend.
 ### Catálogo de demonstração
 
 Após iniciar o backend pela primeira vez, execute a [carga SQL do catálogo](documentacao/catalogo-demonstracao.sql) no editor SQL do Supabase para cadastrar cinco modelos raros. A carga usa placas e matrículas fictícias e preserva os veículos já cadastrados.
+
+Os [créditos e licenças das fotos](documentacao/creditos-fotos.md) estão documentados no projeto.
 
 ## Estrutura de pastas
 

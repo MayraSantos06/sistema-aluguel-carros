@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { autenticar, type UsuarioLogado } from "./services/authService";
 import CalendarioReservas from "./components/CalendarioReservas";
+import { buscarFotoVeiculo, licencasFotos } from "./services/fotosVeiculos";
 import { api, ApiError, mensagemErro, type PerfilCliente } from "./services/api";
 import {
   automovelService,
@@ -69,6 +70,7 @@ const photos = {
 };
 
 function converterAutomovel(a: AutomovelAPI): Vehicle {
+  const foto = buscarFotoVeiculo(a.marca, a.modelo);
   return {
     id: a.id,
     brand: a.marca,
@@ -76,9 +78,21 @@ function converterAutomovel(a: AutomovelAPI): Vehicle {
     year: a.ano,
     registration: a.matricula,
     plate: a.placa,
-    image: photos.car3,
+    image: foto ? `${import.meta.env.BASE_URL}veiculos/${foto.arquivo}` : photos.car3,
     status: "Disponível",
   };
+}
+
+function VehiclePhoto({ vehicle, alt = "" }: { vehicle?: Vehicle; alt?: string }) {
+  return <img src={vehicle?.image || photos.car3} alt={alt} loading="lazy" onError={event => {
+    if (event.currentTarget.src !== photos.car3) event.currentTarget.src = photos.car3;
+  }} />;
+}
+
+function FotoCredito({ vehicle }: { vehicle: Vehicle }) {
+  const foto = buscarFotoVeiculo(vehicle.brand, vehicle.model);
+  if (!foto) return <>Imagem ilustrativa.</>;
+  return <>Foto do modelo por <a href={foto.fonte}>{foto.autor}</a> · <a href={licencasFotos[foto.licenca]}>{foto.licenca}</a>.</>;
 }
 
 type AluguelAPI = {
@@ -331,7 +345,7 @@ function VehicleCard({ vehicle, onView }: { vehicle: Vehicle; onView: () => void
   return (
     <article className="vehicle-card">
       <div className="vehicle-image">
-        <img src={vehicle.image} alt={`${vehicle.brand} ${vehicle.model}`} />
+        <VehiclePhoto vehicle={vehicle} alt={`${vehicle.brand} ${vehicle.model}`} />
         <Badge status={vehicle.status} />
       </div>
       <div className="vehicle-body">
@@ -1085,7 +1099,7 @@ function RentalTable({
                 </td>
                 <td>
                   <div className="table-car">
-                    <img src={v?.image} alt="" />
+                    <VehiclePhoto vehicle={v} />
                     <span>
                       {v?.brand} {v?.model}
                       <small>{v?.registration}</small>
@@ -1188,7 +1202,7 @@ function VehicleDetail({
       </button>
       <div className="detail-hero">
         <div className="detail-image">
-          <img src={vehicle.image} alt={`${vehicle.brand} ${vehicle.model}`} />
+          <VehiclePhoto vehicle={vehicle} alt={`${vehicle.brand} ${vehicle.model}`} />
           <Badge status={vehicle.status} />
         </div>
         <div className="detail-copy">
@@ -1226,7 +1240,7 @@ function VehicleDetail({
             <Button disabled>Indisponível no momento</Button>
           )}
           <small className="demo-note">
-            Imagem ilustrativa.
+            <FotoCredito vehicle={vehicle} />
           </small>
         </div>
       </div>
@@ -1374,7 +1388,7 @@ function RentalRequest({
           </div>
         </form>
         <aside className="summary-card">
-          <img src={vehicle.image} alt="" />
+          <VehiclePhoto vehicle={vehicle} />
           <div>
             <p className="eyebrow">Seu automóvel</p>
             <h3>
@@ -2072,7 +2086,7 @@ function Review({
             </div>
           </div>
           <div className="mini-vehicle">
-            <img src={vehicle.image} alt="" />
+            <VehiclePhoto vehicle={vehicle} />
             <div>
               <strong>
                 {vehicle.brand} {vehicle.model}
