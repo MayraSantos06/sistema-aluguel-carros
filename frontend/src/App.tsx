@@ -90,6 +90,7 @@ type AluguelAPI = {
   dataPedido?: string | null;
   status: "PENDENTE" | "APROVADO" | "RECUSADO" | "CANCELADO";
   agenteParecer: string | null;
+  dataParecer?: string | null;
   observacaoParecer: string | null;
   dataContrato: string | null;
   agenteContrato: string | null;
@@ -1049,10 +1050,12 @@ function RentalTable({
   rentals,
   vehicles,
   onView,
+  abrirPeloNumero = false,
 }: {
   rentals: Rental[];
   vehicles: Vehicle[];
   onView: (id: number) => void;
+  abrirPeloNumero?: boolean;
 }) {
   return (
     <div className="table-wrap">
@@ -1064,9 +1067,9 @@ function RentalTable({
             <th>Cliente</th>
             <th>Período</th>
             <th>Status</th>
-            <th>
+            {!abrirPeloNumero && <th>
               <span className="sr-only">Ações</span>
-            </th>
+            </th>}
           </tr>
         </thead>
         <tbody>
@@ -1075,7 +1078,10 @@ function RentalTable({
             return (
               <tr key={r.id}>
                 <td>
-                  <strong>#{r.id}</strong>
+                  {abrirPeloNumero
+                    ? <button type="button" className="text-link" aria-label={`Visualizar pedido ${r.id}`}
+                        onClick={() => onView(r.id)}>#{r.id}</button>
+                    : <strong>#{r.id}</strong>}
                 </td>
                 <td>
                   <div className="table-car">
@@ -1093,7 +1099,7 @@ function RentalTable({
                 <td>
                   <Badge status={r.status} />
                 </td>
-                <td>
+                {!abrirPeloNumero && <td>
                   <button
                     className="icon-button"
                     onClick={() => onView(r.id)}
@@ -1101,7 +1107,7 @@ function RentalTable({
                   >
                     <Icon name="chevron" />
                   </button>
-                </td>
+                </td>}
               </tr>
             );
           })}
@@ -1998,6 +2004,8 @@ function Review({
   const [observacao, setObservacao] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const pendente = rental.status === "Solicitado" || rental.status === "Em análise";
+  const empregadores = rental.dados.cliente.empregadores ?? [];
   const apply = async () => {
     if (!confirm) return;
     setSaving(true);
@@ -2045,11 +2053,16 @@ function Review({
               <span>Profissão</span>
               <strong>{rental.dados.cliente.profissao}</strong>
             </div>
-            {(rental.dados.cliente.empregadores ?? []).map((item, index) => (
-              <div key={index}><span>{item.nome}</span><strong>{moeda(item.rendimento)}</strong></div>
+            {empregadores.map((item, index) => (
+              <div key={index}><span>{item.nome} · Rendimento mensal</span><strong>{moeda(item.rendimento)}</strong></div>
             ))}
+            <div>
+              <span>Renda mensal declarada</span>
+              <strong>{empregadores.length
+                ? moeda(empregadores.reduce((total, item) => total + item.rendimento, 0))
+                : "Não informada"}</strong>
+            </div>
           </div>
-          {rental.dados.agenteParecer && <p>Parecer de {rental.dados.agenteParecer}: {rental.dados.observacaoParecer || rental.status}</p>}
         </section>
         <section className="panel">
           <div className="panel-heading">
@@ -2089,7 +2102,20 @@ function Review({
           </dl>
         </section>
       </div>
-      {["Solicitado", "Em análise"].includes(rental.status) && (
+      {!pendente && rental.status !== "Cancelado" && (
+        <section className="panel review-outcome">
+          <div className="panel-heading"><h2>Resultado da análise</h2><Badge status={rental.status} /></div>
+          <div className="data-grid">
+            <div><span>Responsável</span><strong>{rental.dados.agenteParecer || "Não registrado"}</strong></div>
+            <div><span>Data da decisão</span><strong>{formatDate(rental.dados.dataParecer)}</strong></div>
+            <div className="review-observation">
+              <span>Observação</span>
+              <strong>{rental.dados.observacaoParecer || "Sem observação registrada."}</strong>
+            </div>
+          </div>
+        </section>
+      )}
+      {pendente && (
         <div className="decision-bar">
           <div>
             <strong>Registrar decisão</strong>
@@ -2131,27 +2157,43 @@ function BankAnalysis({
   go: (r: Route) => void;
   select: (id: number) => void;
 }) {
+  const [historico, setHistorico] = useState(false);
+  const pendentes = rentals.filter(r => r.status === "Solicitado" || r.status === "Em análise");
+  const decididos = rentals.filter(r => r.status === "Aprovado" || r.status === "Recusado");
+  const exibidos = historico ? decididos : pendentes;
   return (
     <>
       <PageTitle
         eyebrow="Risco e crédito"
         title="Análise financeira"
-        text="Consulte os pedidos encaminhados à instituição e avalie conforme as permissões disponíveis."
+        text="Avalie os pedidos pendentes ou consulte os pareceres já registrados."
       />
       <div className="alert neutral">
         <Icon name="shield" />Confira os dados do contratante antes de registrar o parecer.
       </div>
-      <section className="panel">
+      <div className="button-row" role="group" aria-label="Filtrar pedidos">
+        <button type="button" className={`btn btn-${historico ? "secondary" : "primary"}`}
+          aria-pressed={!historico} onClick={() => setHistorico(false)}>Pendentes ({pendentes.length})</button>
+        <button type="button" className={`btn btn-${historico ? "primary" : "secondary"}`}
+          aria-pressed={historico} onClick={() => setHistorico(true)}>Histórico ({decididos.length})</button>
+      </div>
+      <section className="panel bank-analysis-results">
+        {exibidos.length ? (
         <RentalTable
-          rentals={rentals.filter((r) => r.status !== "Cancelado").sort((a, b) => a.id - b.id)}
+          rentals={[...exibidos].sort((a, b) => a.id - b.id)}
           vehicles={vehicles}
+          abrirPeloNumero
           onView={(id) => {
             select(id);
             go("bank-analysis");
           }}
         />
+        ) : <EmptyState
+          title={historico ? "Nenhum parecer registrado" : "Nenhum pedido pendente"}
+          text={historico ? "Os pedidos aprovados e recusados aparecem aqui." : "Novos pedidos aparecerão aqui para avaliação."}
+        />}
       </section>
-      <p className="demo-note">Selecione a seta em um pedido para abrir seus dados de análise.</p>
+      {exibidos.length > 0 && <p className="demo-note">Selecione o número do pedido para abrir os detalhes.</p>}
     </>
   );
 }

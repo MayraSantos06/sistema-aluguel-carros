@@ -1590,6 +1590,14 @@ td > strong {
 .review-grid .panel {
   padding-bottom: 24px;
 }
+.review-outcome,
+.bank-analysis-results {
+  margin-top: 18px;
+}
+.review-observation {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
 .data-grid {
   display: grid;
   gap: 24px;
