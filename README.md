@@ -6,6 +6,10 @@ Protótipo web do Laboratório 02 de Desenvolvimento e Integração de Aplicaç�
 
 Protótipo acadêmico com fluxos de cliente, empresa e banco. O catálogo de demonstração inclui fotos dos cinco modelos raros. Os demais veículos usam uma imagem ilustrativa.
 
+## Índice
+
+[Funcionalidades](#funcionalidades) · [Arquitetura](#tecnologias-e-arquitetura) · [Modelagem](#documentação) · [Demonstração](#demonstração) · [Execução](#instalação-e-execução) · [Testes](#testes)
+
 ## Funcionalidades
 
 - **Cliente** — cadastro de conta e login, CRUD do próprio perfil, até três empregadores com rendimentos, catálogo e criação, consulta, edição e cancelamento dos próprios pedidos.
@@ -29,6 +33,36 @@ A interface React apresenta as telas e chama a API. Os controladores Spring MVC 
 - [Diagrama de classes](documentacao/uml/diagrama-classes.puml)
 - [Diagrama de pacotes](documentacao/uml/diagrama-pacotes.puml)
 - [Revisões e roteiro de demonstração](documentacao/revisao-e-demonstracao.md)
+
+### Prévia dos diagramas UML
+
+#### Casos de uso
+
+![Diagrama de casos de uso com cliente, empresa e banco](documentacao/uml/casos-de-uso.svg)
+
+#### Classes
+
+![Diagrama de classes com usuários, veículos e aluguéis](documentacao/uml/diagrama-classes.svg)
+
+#### Pacotes
+
+![Diagrama de pacotes da interface, API e persistência](documentacao/uml/diagrama-pacotes.svg)
+
+## Demonstração
+
+As capturas foram feitas em um ambiente de teste, com contas e dados fictícios.
+
+### Catálogo do cliente
+
+![Catálogo com fotos dos cinco carros de demonstração](documentacao/capturas/catalogo.png)
+
+### Análise financeira
+
+![Pedido pendente com rendimentos declarados e opções de decisão](documentacao/capturas/analise-financeira.png)
+
+### Contrato com crédito
+
+![Contrato formalizado com proprietário, banco concedente e valor do crédito](documentacao/capturas/contrato-com-credito.png)
 
 ## Instalação e execução
 
