@@ -10,7 +10,13 @@ export class ApiError extends Error {
 export async function api<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   const headers = new Headers({ "X-Requested-With": "XMLHttpRequest" });
   if (method !== "GET") {
-    const csrf = await api<{ headerName: string; token: string }>("/auth/csrf");
+    const csrf = await api<{ headerName: string; token: string }>("/auth/csrf").catch(erro => {
+      if (erro instanceof ApiError && (erro.status === 401 || erro.status === 404)) {
+        throw new ApiError(erro.status,
+          "A API em execução não disponibiliza a sessão. Reinicie o backend e tente novamente.");
+      }
+      throw erro;
+    });
     headers.set(csrf.headerName, csrf.token);
   }
   if (body !== undefined) headers.set("Content-Type", "application/json");

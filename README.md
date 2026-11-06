@@ -45,6 +45,8 @@ if (!(Test-Path .env)) { Copy-Item .env.example .env }
 
 A API usa a porta 8081. Em Linux ou macOS, use `./mvnw spring-boot:run`.
 
+Depois de atualizar a aplicação, reinicie o backend antes de entrar. Se `GET /api/auth/csrf` retornar 401 ou 404 na tela de login, confira se o processo na porta 8081 está executando a versão atual. Essa rota deve responder antes do login.
+
 ### Contas de empresa e banco
 
 O cadastro público cria contas de cliente. Para cadastrar agentes, defina `AGENTE_EMPRESA_LOGIN`, `AGENTE_EMPRESA_SENHA`, `AGENTE_BANCO_LOGIN` e `AGENTE_BANCO_SENHA` no `.env` e inicie uma vez com o perfil `criar-agentes`.
