@@ -15,7 +15,7 @@ Protótipo acadêmico com fluxos de cliente, empresa e banco. O catálogo usa im
 
 - **Regras** — cancelamento e edição antes da decisão, e exclusão de cadastros e veículos apenas quando não há pedidos vinculados.
 
-Na edição pela empresa ou pelo banco, se a consulta de disponibilidade falhar, o calendário usa os períodos aprovados da lista de solicitações. A tela do cliente depende da rota de disponibilidade, que deve estar presente na versão em execução do backend.
+As datas de início e término são escolhidas no calendário do formulário. Na edição pela empresa ou pelo banco, se a consulta de disponibilidade falhar, o calendário usa os períodos aprovados da lista de solicitações. A tela do cliente depende da rota de disponibilidade, que deve estar presente na versão em execução do backend.
 
 ## Tecnologias e arquitetura
 

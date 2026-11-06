@@ -44,6 +44,10 @@ export default function CalendarioReservas({ hoje, reservas, inicio, fim, seleci
             onClick={() => selecionar(dia)}>{i + 1}</button>;
         })}
       </div>
+      <p className="reservation-calendar-legend" aria-live="polite">
+        {inicio && !fim ? "Selecione a data de término. Para um dia, selecione a mesma data."
+          : "Selecione a data de início e depois a data de término."}
+      </p>
       <p className="reservation-calendar-legend"><span /> Reservado · Pedidos pendentes não bloqueiam datas.</p>
     </section>
   );

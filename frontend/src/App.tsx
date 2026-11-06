@@ -1259,6 +1259,7 @@ function RentalRequest({
   const [inicio, setInicio] = useState(rental?.start ?? "");
   const [fim, setFim] = useState(rental?.end ?? "");
   const [disponibilidade, setDisponibilidade] = useState<{ id: number; reservas: PeriodoReservado[] | null }>();
+  const [consulta, setConsulta] = useState(0);
   const reservas = disponibilidade?.id === vehicleId ? disponibilidade.reservas : undefined;
   useEffect(() => {
     let active = true;
@@ -1277,11 +1278,12 @@ function RentalRequest({
       .then(dados => { if (active) setDisponibilidade({ id: vehicleId, reservas: dados }); })
       .catch(() => { if (active) setDisponibilidade({ id: vehicleId, reservas: null }); });
     return () => { active = false; };
-  }, [agente, today, vehicleId]);
+  }, [agente, consulta, today, vehicleId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [perfilIncompleto, setPerfilIncompleto] = useState(false);
   function selecionarDia(dia: string) {
+    setError("");
     if (!inicio || fim || dia < inicio) {
       setInicio(dia);
       setFim("");
@@ -1291,17 +1293,14 @@ function RentalRequest({
   }
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    const start = String(data.get("inicio"));
-    const end = String(data.get("fim"));
-    if (end < start) return setError("A data de término deve ser igual ou posterior à data de início.");
-    if (reservas && sobrepoeReserva(reservas, start, end)) {
+    if (!reservas || !inicio || !fim) return;
+    if (sobrepoeReserva(reservas, inicio, fim)) {
       return setError("O veículo já está reservado em parte do período. Escolha outras datas.");
     }
     setError("");
     setPerfilIncompleto(false);
     setSaving(true);
-    try { await addRental(Number(data.get("automovel") ?? vehicle.id), start, end); }
+    try { await addRental(vehicleId, inicio, fim); }
     catch (erro) {
       setError(mensagemErro(erro));
       setPerfilIncompleto(erro instanceof PerfilIncompleto);
@@ -1334,16 +1333,21 @@ function RentalRequest({
             {vehicles.map(v => <option key={v.id} value={v.id}>{v.brand} {v.model} · {v.registration}</option>)}
           </select></Field>}
           {reservas ? <CalendarioReservas hoje={today} reservas={reservas} inicio={inicio} fim={fim}
-            selecionar={selecionarDia} /> : <p className="reservation-calendar-status" role="status">
-            {reservas === null ? "Não foi possível carregar o calendário. O período será verificado ao enviar."
-              : "Carregando calendário…"}
-          </p>}
+            selecionar={selecionarDia} /> : <div className="reservation-calendar-status" role="status">
+            {reservas === null ? <>
+              <p>Não foi possível carregar o calendário.</p>
+              <Button variant="secondary" onClick={() => {
+                setDisponibilidade(undefined);
+                setConsulta(valor => valor + 1);
+              }}>Tentar novamente</Button>
+            </> : <p>Carregando calendário…</p>}
+          </div>}
           <div className="two-columns">
-            <Field label="Data de início" name="inicio" required>
-              <input name="inicio" type="date" required min={today} value={inicio} onChange={event => setInicio(event.target.value)} />
+            <Field label="Data de início" name="inicio">
+              <input name="inicio" readOnly value={inicio ? formatDate(inicio) : ""} placeholder="Selecione no calendário" />
             </Field>
-            <Field label="Data de término" name="fim" required>
-              <input name="fim" type="date" required min={inicio || today} value={fim} onChange={event => setFim(event.target.value)} />
+            <Field label="Data de término" name="fim">
+              <input name="fim" readOnly value={fim ? formatDate(fim) : ""} placeholder="Selecione no calendário" />
             </Field>
           </div>
           <div className="info-box">
@@ -1360,7 +1364,7 @@ function RentalRequest({
             <Button variant="ghost" onClick={() => go(back)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={saving} icon="arrow">
+            <Button type="submit" disabled={saving || !reservas || !inicio || !fim || inicio < today} icon="arrow">
               {rental ? "Salvar alterações" : "Confirmar solicitação"}
             </Button>
           </div>
