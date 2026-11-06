@@ -63,10 +63,10 @@ public class MeuAluguelService {
         Cliente cliente = obterCliente(login);
         Aluguel aluguel = new Aluguel();
         aluguel.setCliente(cliente);
-        return atualizarDados(aluguel, dados);
+        return atualizarDados(aluguel, dados, bloquearAutomovel(dados.automovelId()));
     }
 
-    Aluguel atualizarDados(Aluguel aluguel, MinhaSolicitacaoAluguelDTO dados) {
+    Aluguel atualizarDados(Aluguel aluguel, MinhaSolicitacaoAluguelDTO dados, Automovel automovel) {
         if (dados.dataInicio() == null
                 || dados.dataFim() == null
                 || dados.dataInicio().isBefore(LocalDate.now())
@@ -78,12 +78,12 @@ public class MeuAluguelService {
             );
         }
 
-        Automovel automovel = automovelRepository
-            .findById(dados.automovelId())
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Automovel nao encontrado"
-            ));
+        if (aluguelRepository.existsByAutomovelIdAndStatusAndDataInicioLessThanEqualAndDataFimGreaterThanEqualAndIdNot(
+                automovel.getId(), StatusAluguel.APROVADO, dados.dataFim(), dados.dataInicio(),
+                aluguel.getId() == null ? 0L : aluguel.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "O veículo já está reservado em parte do período. Escolha outras datas.");
+        }
 
         aluguel.setAutomovel(automovel);
         aluguel.setDataInicio(dados.dataInicio());
@@ -102,7 +102,13 @@ public class MeuAluguelService {
 
     @Transactional
     public Aluguel atualizar(String login, Long id, MinhaSolicitacaoAluguelDTO dados) {
-        return atualizarDados(obterPendente(login, id), dados);
+        Automovel automovel = bloquearAutomovel(dados.automovelId());
+        return atualizarDados(obterPendente(login, id), dados, automovel);
+    }
+
+    Automovel bloquearAutomovel(Long id) {
+        return automovelRepository.buscarParaAlterar(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Automóvel não encontrado"));
     }
 
     @Transactional

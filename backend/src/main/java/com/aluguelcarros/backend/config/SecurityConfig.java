@@ -104,7 +104,7 @@ public SecurityFilterChain securityFilterChain(
 
             // Consulta de automoveis
             .requestMatchers(
-                HttpMethod.GET, "/api/automoveis", "/api/automoveis/*"
+                HttpMethod.GET, "/api/automoveis", "/api/automoveis/*", "/api/automoveis/*/reservas"
             ).authenticated()
 
             // Criacao antiga de aluguel: bloqueada

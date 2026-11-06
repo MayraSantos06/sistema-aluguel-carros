@@ -6,6 +6,7 @@ import com.aluguelcarros.backend.model.*;
 import com.aluguelcarros.backend.repository.*;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.aluguelcarros.backend.dto.MinhaSolicitacaoAluguelDTO;
@@ -70,7 +71,7 @@ public class AluguelService {
     }
 
     public List<Aluguel> listar() {
-        return aluguelRepository.findAll();
+        return aluguelRepository.findAll(Sort.by("id"));
     }
 
     public List<Aluguel> listarPorCliente(Long clienteId) {
@@ -85,55 +86,56 @@ public class AluguelService {
     }
 
 
-@Transactional
-public Aluguel alterarStatus(Long id, StatusAluguel novoStatus, String agente, String observacao) {
-    Aluguel aluguel = buscarParaAlterar(id);
-    exigirPendente(aluguel);
+    @Transactional
+    public Aluguel alterarStatus(Long id, StatusAluguel novoStatus, String agente, String observacao) {
+        if (novoStatus != StatusAluguel.APROVADO && novoStatus != StatusAluguel.RECUSADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transição de status não permitida");
+        }
+        Long automovelId = aluguelRepository.buscarAutomovelId(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado"));
+        // Mantém a ordem dos bloqueios igual à da edição e do envio de novos pedidos.
+        meuAluguelService.bloquearAutomovel(automovelId);
+        Aluguel aluguel = buscarParaAlterar(id);
+        exigirPendente(aluguel);
+        if (!aluguel.getAutomovel().getId().equals(automovelId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "O veículo do pedido mudou. Atualize e tente novamente.");
+        }
 
-    if (novoStatus == null) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Status invalido"
-        );
+        if (novoStatus == StatusAluguel.APROVADO) {
+            aprovar(aluguel, automovelId);
+        }
+        aluguel.setStatus(novoStatus);
+        aluguel.registrarParecer(agente, observacao);
+        return aluguel;
     }
 
-    if (novoStatus != StatusAluguel.APROVADO
-            && novoStatus != StatusAluguel.RECUSADO) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Transicao de status nao permitida"
-        );
-    }
-
-    if (novoStatus == StatusAluguel.APROVADO) {
-        automovelRepository.buscarParaAlterar(aluguel.getAutomovel().getId()).orElseThrow();
-        boolean conflito = aluguelRepository
-            .existsByAutomovelIdAndStatusAndDataInicioLessThanEqualAndDataFimGreaterThanEqualAndIdNot(
-                aluguel.getAutomovel().getId(),
-                StatusAluguel.APROVADO,
-                aluguel.getDataFim(),
-                aluguel.getDataInicio(),
-                aluguel.getId()
-            );
-
-        if (conflito) {
-            throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "Automovel ja reservado para este periodo"
-            );
+    private void aprovar(Aluguel aluguel, Long automovelId) {
+        var inicio = aluguel.getDataInicio();
+        var fim = aluguel.getDataFim();
+        var id = aluguel.getId();
+        if (aluguelRepository.existsByAutomovelIdAndStatusAndDataInicioLessThanEqualAndDataFimGreaterThanEqualAndIdNot(
+                automovelId, StatusAluguel.APROVADO, fim, inicio, id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Automóvel já reservado para este período");
+        }
+        aluguelRepository.findFirstByAutomovelIdAndStatusAndIdLessThanAndDataInicioLessThanEqualAndDataFimGreaterThanEqualOrderById(
+                automovelId, StatusAluguel.PENDENTE, id, fim, inicio).ifPresent(anterior -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "O pedido #" + anterior.getId() + " chegou antes para este veículo e período. Avalie-o primeiro.");
+                });
+        for (Aluguel posterior : aluguelRepository.bloquearPosterioresSobrepostos(
+                automovelId, StatusAluguel.PENDENTE, id, inicio, fim)) {
+            posterior.setStatus(StatusAluguel.RECUSADO);
+            posterior.registrarParecer("Sistema",
+                    "O veículo foi reservado para um pedido recebido antes do seu, com datas sobrepostas. Escolha outro período.");
         }
     }
 
-    aluguel.setStatus(novoStatus);
-    aluguel.registrarParecer(agente, observacao);
-    return aluguel;
-}
-
     @Transactional
     public Aluguel atualizar(Long id, MinhaSolicitacaoAluguelDTO dados) {
+        Automovel automovel = meuAluguelService.bloquearAutomovel(dados.automovelId());
         Aluguel aluguel = buscarParaAlterar(id);
         exigirPendente(aluguel);
-        return meuAluguelService.atualizarDados(aluguel, dados);
+        return meuAluguelService.atualizarDados(aluguel, dados, automovel);
     }
 
     @Transactional

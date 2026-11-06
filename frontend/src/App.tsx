@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { autenticar, type UsuarioLogado } from "./services/authService";
+import CalendarioReservas from "./components/CalendarioReservas";
 import { api, ApiError, mensagemErro, type PerfilCliente } from "./services/api";
 import {
   automovelService,
+  sobrepoeReserva,
   type AutomovelAPI,
+  type PeriodoReservado,
 } from "./services/automovelService";
 
 type Role = "CLIENTE" | "EMPRESA" | "BANCO";
@@ -1234,7 +1237,7 @@ class PerfilIncompleto extends Error {
 }
 
 function RentalRequest({
-  vehicle,
+  vehicle: initialVehicle,
   go,
   addRental,
   rental,
@@ -1249,15 +1252,39 @@ function RentalRequest({
   back: Route;
 }) {
   const [today] = useState(() => new Intl.DateTimeFormat("sv-SE").format(new Date()));
+  const [vehicleId, setVehicleId] = useState(initialVehicle.id);
+  const vehicle = vehicles.find(item => item.id === vehicleId) ?? initialVehicle;
+  const [inicio, setInicio] = useState(rental?.start ?? "");
+  const [fim, setFim] = useState(rental?.end ?? "");
+  const [disponibilidade, setDisponibilidade] = useState<{ id: number; reservas: PeriodoReservado[] | null }>();
+  const reservas = disponibilidade?.id === vehicleId ? disponibilidade.reservas : undefined;
+  useEffect(() => {
+    let active = true;
+    automovelService.reservas(vehicleId)
+      .then(dados => { if (active) setDisponibilidade({ id: vehicleId, reservas: dados }); })
+      .catch(() => { if (active) setDisponibilidade({ id: vehicleId, reservas: null }); });
+    return () => { active = false; };
+  }, [vehicleId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [perfilIncompleto, setPerfilIncompleto] = useState(false);
+  function selecionarDia(dia: string) {
+    if (!inicio || fim || dia < inicio) {
+      setInicio(dia);
+      setFim("");
+    } else {
+      setFim(dia);
+    }
+  }
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const start = String(data.get("inicio"));
     const end = String(data.get("fim"));
     if (end < start) return setError("A data de término deve ser igual ou posterior à data de início.");
+    if (reservas && sobrepoeReserva(reservas, start, end)) {
+      return setError("O veículo já está reservado em parte do período. Escolha outras datas.");
+    }
     setError("");
     setPerfilIncompleto(false);
     setSaving(true);
@@ -1287,12 +1314,22 @@ function RentalRequest({
           {perfilIncompleto && <Button variant="secondary" onClick={() => go("profile")}>
             Abrir Meu perfil
           </Button>}
-          {rental && <Field label="Automóvel" name="automovel"><select name="automovel" defaultValue={vehicle.id}>
+          {rental && <Field label="Automóvel" name="automovel"><select name="automovel" value={vehicleId}
+            onChange={event => setVehicleId(Number(event.target.value))}>
             {vehicles.map(v => <option key={v.id} value={v.id}>{v.brand} {v.model} · {v.registration}</option>)}
           </select></Field>}
+          {reservas ? <CalendarioReservas hoje={today} reservas={reservas} inicio={inicio} fim={fim}
+            selecionar={selecionarDia} /> : <p role="status">
+            {reservas === null ? "Não foi possível carregar o calendário. O período será verificado ao enviar."
+              : "Carregando calendário…"}
+          </p>}
           <div className="two-columns">
-            <Field label="Data de início" name="inicio" defaultValue={rental?.start} type="date" required min={today} />
-            <Field label="Data de término" name="fim" defaultValue={rental?.end} type="date" required min={today} />
+            <Field label="Data de início" name="inicio" required>
+              <input name="inicio" type="date" required min={today} value={inicio} onChange={event => setInicio(event.target.value)} />
+            </Field>
+            <Field label="Data de término" name="fim" required>
+              <input name="fim" type="date" required min={inicio || today} value={fim} onChange={event => setFim(event.target.value)} />
+            </Field>
           </div>
           <div className="info-box">
             <Icon name="shield" />
@@ -1523,6 +1560,9 @@ function RentalDetail({
             <dd>{rental.client}</dd>
           </div>
         </dl>
+        {rental.status === "Recusado" && rental.dados.observacaoParecer && (
+          <p className="alert neutral"><strong>Motivo da recusa</strong><br />{rental.dados.observacaoParecer}</p>
+        )}
         {["Solicitado", "Em análise"].includes(rental.status) && (
           <div className="button-row">
             <Button variant="secondary" onClick={edit}>Editar pedido</Button>
@@ -1907,11 +1947,11 @@ function RequestsPage({
       <PageTitle
         eyebrow="Operações"
         title="Solicitações de aluguel"
-        text="Consulte os pedidos recebidos e avalie as ações disponíveis."
+        text="Os pedidos são exibidos por ordem de chegada, do mais antigo ao mais recente."
       />
       <section className="panel">
         <RentalTable
-          rentals={rentals}
+          rentals={[...rentals].sort((a, b) => a.id - b.id)}
           vehicles={vehicles}
           onView={(id) => {
             select(id);

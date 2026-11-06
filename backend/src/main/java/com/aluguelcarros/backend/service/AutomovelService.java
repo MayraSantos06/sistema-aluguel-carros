@@ -1,6 +1,9 @@
 package com.aluguelcarros.backend.service;
 
 import com.aluguelcarros.backend.model.Automovel;
+import com.aluguelcarros.backend.model.StatusAluguel;
+import com.aluguelcarros.backend.dto.PeriodoReservado;
+import java.time.LocalDate;
 import com.aluguelcarros.backend.repository.AutomovelRepository;
 import com.aluguelcarros.backend.repository.AluguelRepository;
 
@@ -24,6 +27,14 @@ public class AutomovelService {
 
     public List<Automovel> listar() {
         return repository.findAll();
+    }
+
+    public List<PeriodoReservado> reservas(Long id) {
+        buscar(id);
+        return alugueis.findByAutomovelIdAndStatusAndDataFimGreaterThanEqualOrderByDataInicio(
+                        id, StatusAluguel.APROVADO, LocalDate.now()).stream()
+                .map(aluguel -> new PeriodoReservado(aluguel.getDataInicio(), aluguel.getDataFim()))
+                .toList();
     }
 
     public Automovel buscar(Long id) {

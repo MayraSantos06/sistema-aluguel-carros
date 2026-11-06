@@ -117,6 +117,19 @@ class FluxoAluguelTests {
         long pedido = id(chamar("POST", PEDIDOS, "cliente", datas).andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("PENDENTE")));
         long segundo = id(chamar("POST", PEDIDOS, "outro", datas).andExpect(status().isCreated()));
+        String datasLivres = "{\"automovelId\":%d,\"dataInicio\":\"%s\",\"dataFim\":\"%s\"}"
+                .formatted(veiculo, inicio.plusDays(3), inicio.plusDays(4));
+        long semConflito = id(chamar("POST", PEDIDOS, "outro", datasLivres).andExpect(status().isCreated()));
+        String calendario = FROTA + "/" + veiculo + "/reservas";
+        chamar("GET", calendario, null, null).andExpect(status().isUnauthorized());
+        chamar("GET", calendario, "outro", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+        chamar("GET", GESTAO, "empresa", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value((int) pedido))
+                .andExpect(jsonPath("$[1].id").value((int) segundo));
+        chamar("PATCH", GESTAO + "/" + segundo + "/status?status=APROVADO", "banco", null)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("chegou antes")));
         chamar("GET", PEDIDOS, "cliente", null).andExpect(jsonPath("$.length()").value(1));
         chamar("PUT", PEDIDOS + "/" + pedido, "outro", datas).andExpect(status().isNotFound());
         chamar("PUT", PEDIDOS + "/" + pedido, "cliente", datas).andExpect(status().isOk());
@@ -127,11 +140,23 @@ class FluxoAluguelTests {
         chamar("POST", contrato, "empresa", "{\"tipo\":\"CLIENTE\"}").andExpect(status().isConflict());
         chamar("PATCH", GESTAO + "/" + pedido + "/status?status=APROVADO&observacao=Favoravel", "empresa", null)
                 .andExpect(status().isOk()).andExpect(jsonPath("$.agenteParecer").value("empresa"));
+        chamar("GET", calendario, "outro", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].inicio").value(inicio.toString()))
+                .andExpect(jsonPath("$[0].fim").value(inicio.plusDays(2).toString()))
+                .andExpect(jsonPath("$[0].cliente").doesNotExist());
+        chamar("POST", PEDIDOS, "outro", datas).andExpect(status().isConflict());
         chamar("PATCH", PEDIDOS + "/" + pedido + "/cancelamento", "cliente", null)
                 .andExpect(status().isConflict());
         chamar("PATCH", GESTAO + "/" + segundo + "/status?status=APROVADO", "banco", null)
                 .andExpect(status().isConflict());
-        chamar("PATCH", PEDIDOS + "/" + segundo + "/cancelamento", "outro", null)
+        chamar("GET", GESTAO + "/" + segundo, "empresa", null)
+                .andExpect(jsonPath("$.status").value("RECUSADO"))
+                .andExpect(jsonPath("$.agenteParecer").value("Sistema"));
+        chamar("GET", PEDIDOS, "outro", null)
+                .andExpect(jsonPath("$[?(@.status == 'RECUSADO')].observacaoParecer",
+                        org.hamcrest.Matchers.hasItem(org.hamcrest.Matchers.containsString("datas sobrepostas"))));
+        chamar("PATCH", PEDIDOS + "/" + semConflito + "/cancelamento", "outro", null)
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("CANCELADO"));
         chamar("POST", contrato, "empresa", "{\"tipo\":\"CLIENTE\"}")
                 .andExpect(status().isOk()).andExpect(jsonPath("$.proprietario").value("Cliente Teste"))

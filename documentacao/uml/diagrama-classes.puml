@@ -64,6 +64,9 @@ Aluguel --> PerfilUsuario : tipo de proprietário
 note right of Aluguel
   Parecer, contrato e crédito são opcionais.
   O status registra a decisão do parecer.
+  Apenas pedidos aprovados bloqueiam datas.
+  Aprovar o primeiro pedido recusa os
+  pedidos pendentes posteriores sobrepostos.
   O crédito é registrado por um usuário BANCO.
 end note
 @enduml

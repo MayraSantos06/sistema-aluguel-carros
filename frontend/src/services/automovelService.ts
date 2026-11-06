@@ -10,9 +10,16 @@ export type AutomovelAPI = {
 };
 
 export type DadosAutomovel = Omit<AutomovelAPI, "id">;
+export type PeriodoReservado = { inicio: string; fim: string };
+
+export function sobrepoeReserva(reservas: PeriodoReservado[], inicio: string, fim: string) {
+  return reservas.some(reserva => reserva.inicio <= fim && reserva.fim >= inicio);
+}
 
 export const automovelService = {
   listar: () => api<AutomovelAPI[]>("/automoveis"),
+
+  reservas: (id: number) => api<PeriodoReservado[]>(`/automoveis/${id}/reservas`),
 
   cadastrar: (dados: DadosAutomovel) =>
     api<AutomovelAPI>("/automoveis", "POST", dados),

@@ -11,7 +11,8 @@ Protótipo acadêmico com fluxos de cliente, empresa e banco. O catálogo usa im
 - **Cliente** — cadastro de conta e login, CRUD do próprio perfil, até três empregadores com rendimentos, catálogo e criação, consulta, edição e cancelamento dos próprios pedidos.
 - **Empresa** — gestão da frota, consulta e edição de pedidos pendentes, parecer financeiro e formalização de contratos aprovados.
 - **Banco** — consulta e edição de pedidos pendentes, parecer financeiro, formalização e concessão opcional de crédito em um contrato.
-- **Regras** — cancelamento e edição antes da decisão, verificação de períodos sobrepostos na aprovação e exclusão de cadastros e veículos apenas quando não há pedidos vinculados.
+- **Disponibilidade e fila** — o calendário bloqueia somente períodos aprovados. Pedidos pendentes para o mesmo veículo e datas sobrepostas são avaliados por ordem de chegada. Ao aprovar o primeiro, o sistema recusa os posteriores em conflito e exibe o motivo em **Meus aluguéis**.
+- **Regras** — cancelamento e edição antes da decisão, e exclusão de cadastros e veículos apenas quando não há pedidos vinculados.
 
 ## Tecnologias e arquitetura
 

@@ -11,6 +11,7 @@ rectangle "Vélora" {
   usecase "Entrar com usuário e senha" as Login
   usecase "Gerenciar próprio cadastro\ne empregadores" as Perfil
   usecase "Consultar automóveis" as Catalogo
+  usecase "Consultar disponibilidade" as Disponibilidade
   usecase "Gerenciar frota" as Frota
   usecase "Criar, consultar, editar ou\ncancelar próprios pedidos" as Pedidos
   usecase "Consultar e editar pedidos" as Gestao
@@ -22,6 +23,7 @@ Cliente -- Cadastro
 Cliente -- Login
 Cliente -- Perfil
 Cliente -- Catalogo
+Cliente -- Disponibilidade
 Cliente -- Pedidos
 Empresa -- Frota
 Agente -- Login

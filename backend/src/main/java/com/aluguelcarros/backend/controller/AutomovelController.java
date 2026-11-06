@@ -1,6 +1,7 @@
 package com.aluguelcarros.backend.controller;
 
 import com.aluguelcarros.backend.model.Automovel;
+import com.aluguelcarros.backend.dto.PeriodoReservado;
 import com.aluguelcarros.backend.service.AutomovelService;
 
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,11 @@ public class AutomovelController {
     @GetMapping("/{id}")
     public Automovel buscar(@PathVariable Long id) {
         return service.buscar(id);
+    }
+
+    @GetMapping("/{id}/reservas")
+    public List<PeriodoReservado> reservas(@PathVariable Long id) {
+        return service.reservas(id);
     }
 
     @PostMapping
