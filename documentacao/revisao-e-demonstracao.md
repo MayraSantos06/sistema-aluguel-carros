@@ -8,7 +8,7 @@
 | Empresa, Banco e Agente | As contas são identificadas pelo login e pelo perfil `EMPRESA` ou `BANCO` em `Usuario`. |
 | EntidadeEmpregadora | `Empregador` é um valor persistido em uma coleção ordenada vinculada ao cliente, com limite de três. |
 | Avaliação, propriedade e contratos | Um pedido pode receber um parecer, um contrato e um crédito opcional. Os registros são armazenados no próprio aluguel. A decisão usa o status, e o contrato tem data e identificação do proprietário. |
-| Pacotes de interface e segurança | As telas principais vivem em `App.tsx`. Os serviços HTTP ficam em `frontend/src/services`. O Spring Security é configurado no pacote `config`. |
+| Pacotes de interface e segurança | As telas principais vivem em `App.tsx`. O calendário está em `frontend/src/components` e os serviços HTTP em `frontend/src/services`. O Spring Security é configurado no pacote `config`. |
 
 O histórico do Git preserva os diagramas iniciais. Os diagramas atuais refletem as decisões acima.
 

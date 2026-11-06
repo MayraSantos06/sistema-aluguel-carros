@@ -1,7 +1,10 @@
 @startuml
 left to right direction
 package "Frontend · React + Vite" {
-  [Telas e componentes\nApp.tsx] as App
+  [Telas e navegação\nApp.tsx] as App
+  package "components" as Components {
+    [Calendário de reservas]
+  }
   package "services" as FrontServices
 }
 package "Backend · Spring MVC" {
@@ -13,8 +16,9 @@ package "Backend · Spring MVC" {
   package "dto" as DTO
 }
 database "Supabase · PostgreSQL" as DB
-App ..> FrontServices : HTTP
-App ..> Controller : autenticação HTTP
+App ..> Components : apresenta
+App ..> FrontServices : consulta e autenticação
+Components ..> FrontServices : tipos e regras de períodos
 FrontServices ..> Controller : REST
 Config ..> Controller : protege as rotas
 Config ..> Service : carrega os usuários
