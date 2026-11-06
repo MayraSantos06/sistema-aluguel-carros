@@ -12,7 +12,10 @@ Protótipo acadêmico com fluxos de cliente, empresa e banco. O catálogo usa im
 - **Empresa** — gestão da frota, consulta e edição de pedidos pendentes com calendário de disponibilidade, parecer financeiro e formalização de contratos aprovados.
 - **Banco** — consulta e edição de pedidos pendentes, parecer financeiro, formalização e concessão opcional de crédito em um contrato.
 - **Disponibilidade e fila** — o calendário bloqueia somente períodos aprovados. Pedidos pendentes para o mesmo veículo e datas sobrepostas são avaliados por ordem de chegada. Ao aprovar o primeiro, o sistema recusa os posteriores em conflito e exibe o motivo em **Meus aluguéis**.
+
 - **Regras** — cancelamento e edição antes da decisão, e exclusão de cadastros e veículos apenas quando não há pedidos vinculados.
+
+Na edição pela empresa ou pelo banco, se a consulta de disponibilidade falhar, o calendário usa os períodos aprovados da lista de solicitações. A tela do cliente depende da rota de disponibilidade, que deve estar presente na versão em execução do backend.
 
 ## Tecnologias e arquitetura
 

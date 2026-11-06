@@ -1273,6 +1273,9 @@ td > strong {
 }
 .form-panel > .two-columns,
 .form-panel > .form-grid,
+.form-panel > .field,
+.form-panel > .reservation-calendar,
+.form-panel > .reservation-calendar-status,
 .form-panel > .info-box {
   margin: 24px;
 }
@@ -1285,7 +1288,8 @@ td > strong {
 .app-main .field > span {
   color: #5c6067;
 }
-.app-main .field input {
+.app-main .field input,
+.app-main .field select {
   background: #f7f7f5;
   border-color: #d9dad6;
   color: var(--ink);

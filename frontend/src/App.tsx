@@ -1243,6 +1243,7 @@ function RentalRequest({
   rental,
   vehicles,
   back,
+  agente,
 }: {
   vehicle: Vehicle;
   go: (r: Route) => void;
@@ -1250,6 +1251,7 @@ function RentalRequest({
   rental?: Rental;
   vehicles: Vehicle[];
   back: Route;
+  agente: boolean;
 }) {
   const [today] = useState(() => new Intl.DateTimeFormat("sv-SE").format(new Date()));
   const [vehicleId, setVehicleId] = useState(initialVehicle.id);
@@ -1260,11 +1262,22 @@ function RentalRequest({
   const reservas = disponibilidade?.id === vehicleId ? disponibilidade.reservas : undefined;
   useEffect(() => {
     let active = true;
-    automovelService.reservas(vehicleId)
+    const carregarReservas = async () => {
+      try {
+        return await automovelService.reservas(vehicleId);
+      } catch (erro) {
+        if (!agente) throw erro;
+        const pedidos = await api<AluguelAPI[]>("/alugueis");
+        return pedidos
+          .filter(pedido => pedido.automovel.id === vehicleId && pedido.status === "APROVADO" && pedido.dataFim >= today)
+          .map(pedido => ({ inicio: pedido.dataInicio, fim: pedido.dataFim }));
+      }
+    };
+    carregarReservas()
       .then(dados => { if (active) setDisponibilidade({ id: vehicleId, reservas: dados }); })
       .catch(() => { if (active) setDisponibilidade({ id: vehicleId, reservas: null }); });
     return () => { active = false; };
-  }, [vehicleId]);
+  }, [agente, today, vehicleId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [perfilIncompleto, setPerfilIncompleto] = useState(false);
@@ -1321,7 +1334,7 @@ function RentalRequest({
             {vehicles.map(v => <option key={v.id} value={v.id}>{v.brand} {v.model} · {v.registration}</option>)}
           </select></Field>}
           {reservas ? <CalendarioReservas hoje={today} reservas={reservas} inicio={inicio} fim={fim}
-            selecionar={selecionarDia} /> : <p role="status">
+            selecionar={selecionarDia} /> : <p className="reservation-calendar-status" role="status">
             {reservas === null ? "Não foi possível carregar o calendário. O período será verificado ao enviar."
               : "Carregando calendário…"}
           </p>}
@@ -2399,7 +2412,7 @@ export default function App() {
     case "edit-request": {
       const edit = route === "edit-request" ? currentRental : undefined;
       const vehicle = route === "request" ? currentVehicle : edit && rentalVehicle;
-      if (vehicle) content = <RentalRequest key={route} vehicle={vehicle} rental={edit} vehicles={vehicles} go={go}
+      if (vehicle) content = <RentalRequest key={route} vehicle={vehicle} rental={edit} vehicles={vehicles} go={go} agente={role !== "CLIENTE"}
         back={edit ? role === "CLIENTE" ? "rental-detail" : detalhesAgente : "vehicle"}
         addRental={async (automovelId, start, end) => {
           if (!edit && role === "CLIENTE") {
