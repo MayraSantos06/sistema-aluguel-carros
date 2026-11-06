@@ -1298,9 +1298,11 @@ function RentalRequest({
   return (
     <>
       <PageTitle
-        eyebrow="Nova solicitação"
-        title={rental ? "Editar período" : "Defina seu período"}
-        text="Revise o automóvel e informe as datas desejadas para enviar o pedido."
+        eyebrow={rental ? `Pedido #${rental.id}` : "Nova solicitação"}
+        title={rental ? "Editar pedido" : "Defina seu período"}
+        text={rental
+          ? "Selecione o automóvel e consulte o calendário antes de alterar o período. As datas reservadas aparecem bloqueadas."
+          : "Revise o automóvel e informe as datas desejadas para enviar o pedido."}
       />
       <div className="request-layout">
         <form className="panel form-panel" onSubmit={submit}>

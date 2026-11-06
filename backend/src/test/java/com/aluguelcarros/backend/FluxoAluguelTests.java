@@ -146,6 +146,12 @@ class FluxoAluguelTests {
                 .andExpect(jsonPath("$[0].fim").value(inicio.plusDays(2).toString()))
                 .andExpect(jsonPath("$[0].cliente").doesNotExist());
         chamar("POST", PEDIDOS, "outro", datas).andExpect(status().isConflict());
+        chamar("GET", calendario, "empresa", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].inicio").value(inicio.toString()));
+        chamar("PUT", GESTAO + "/" + semConflito, "empresa", datas).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("já está reservado")));
+        chamar("GET", GESTAO + "/" + semConflito, "empresa", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.dataInicio").value(inicio.plusDays(3).toString()));
         chamar("PATCH", PEDIDOS + "/" + pedido + "/cancelamento", "cliente", null)
                 .andExpect(status().isConflict());
         chamar("PATCH", GESTAO + "/" + segundo + "/status?status=APROVADO", "banco", null)
