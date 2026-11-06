@@ -74,6 +74,10 @@ npm run dev
 
 Abra `http://localhost:5173`. O Vite encaminha as rotas `/api` ao backend.
 
+### Catálogo de demonstração
+
+Após iniciar o backend pela primeira vez, execute a [carga SQL do catálogo](documentacao/catalogo-demonstracao.sql) no editor SQL do Supabase para cadastrar cinco modelos raros. A carga usa placas e matrículas fictícias e preserva os veículos já cadastrados.
+
 ## Estrutura de pastas
 
 | Pasta | Conteúdo |
