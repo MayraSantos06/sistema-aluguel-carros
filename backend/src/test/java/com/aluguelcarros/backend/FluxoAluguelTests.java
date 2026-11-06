@@ -1,8 +1,5 @@
 package com.aluguelcarros.backend;
 
-import com.aluguelcarros.backend.model.PerfilUsuario;
-import com.aluguelcarros.backend.model.Usuario;
-import com.aluguelcarros.backend.repository.UsuarioRepository;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
@@ -30,8 +27,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.username=sa",
         "spring.datasource.password=",
         "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "AGENTE_EMPRESA_LOGIN=empresa",
+        "AGENTE_EMPRESA_SENHA=senha-apenas-de-teste",
+        "AGENTE_BANCO_LOGIN=banco",
+        "AGENTE_BANCO_SENHA=senha-apenas-de-teste"
 })
+@ActiveProfiles("criar-agentes")
 @TestExecutionListeners(DependencyInjectionTestExecutionListener.class)
 class FluxoAluguelTests {
     private static final String SENHA = "senha-apenas-de-teste";
@@ -40,8 +42,6 @@ class FluxoAluguelTests {
     private static final String GESTAO = "/api/alugueis";
     private static final String FROTA = "/api/automoveis";
     @Autowired WebApplicationContext context;
-    @Autowired UsuarioRepository usuarios;
-    @Autowired PasswordEncoder encoder;
     @Autowired ObjectMapper json;
     private MockMvc mvc;
 
@@ -73,9 +73,11 @@ class FluxoAluguelTests {
         chamar("GET", PERFIL, null, null).andExpect(status().isUnauthorized());
         cadastrar("cliente");
         cadastrar("outro");
-        usuarios.save(new Usuario("empresa", encoder.encode(SENHA), PerfilUsuario.EMPRESA));
-        usuarios.save(new Usuario("banco", encoder.encode(SENHA), PerfilUsuario.BANCO));
+        cadastrar("banco_teste");
+        chamar("GET", "/api/auth/me", "banco_teste", null).andExpect(jsonPath("$.perfil").value("CLIENTE"));
+        chamar("GET", GESTAO, "banco_teste", null).andExpect(status().isForbidden());
         chamar("GET", "/api/auth/me", "banco", null).andExpect(jsonPath("$.perfil").value("BANCO"));
+        chamar("GET", PERFIL, "banco", null).andExpect(status().isForbidden());
         chamar("GET", PERFIL, "cliente", null).andExpect(status().isNotFound());
         String perfil = """
                 {"nome":"Cliente Teste","rg":"1234","cpf":"12345678901","profissao":"Analista",
@@ -127,6 +129,8 @@ class FluxoAluguelTests {
         chamar("GET", GESTAO, "empresa", null).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value((int) pedido))
                 .andExpect(jsonPath("$[1].id").value((int) segundo));
+        chamar("GET", GESTAO + "/" + pedido, "banco", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.cliente.empregadores[0].rendimento").value(1000.50));
         chamar("PATCH", GESTAO + "/" + segundo + "/status?status=APROVADO", "banco", null)
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("chegou antes")));

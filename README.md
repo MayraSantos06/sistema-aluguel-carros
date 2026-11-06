@@ -61,6 +61,8 @@ O cadastro público cria contas de cliente. Para cadastrar agentes, defina `AGEN
 
 É possível configurar só um dos pares. Uma conta existente com o mesmo perfil é preservada. Depois da criação, remova do arquivo as variáveis dos agentes e use o comando normal de execução.
 
+Se o login escolhido já foi usado no formulário **Criar conta de cliente**, escolha outro para a conta de banco. Entre com a nova conta e confira o perfil **BANCO** no menu. O painel **Visão financeira** oferece um atalho para **Análise financeira**.
+
 ### Frontend
 
 Em outro terminal, a partir da raiz do projeto:

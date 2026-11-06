@@ -592,7 +592,7 @@ function AuthLayout({
     try {
       if (mode === "signup") {
         await api("/auth/cadastro", "POST", { login: user, senha: password });
-        setNotice("Conta criada com sucesso! Agora você pode entrar.");
+        setNotice("Conta de cliente criada com sucesso! Agora você pode entrar.");
       } else {
         const profile = await autenticar(user, password);
         onLogin(profile.perfil, profile.login);
@@ -648,13 +648,13 @@ function AuthLayout({
           <h1>
             {mode === "login"
               ? "Bem-vindo de volta."
-              : "Crie sua conta."}
+              : "Crie sua conta de cliente."}
           </h1>
 
           <p className="muted">
             {mode === "login"
-              ? "Entre para acompanhar seus pedidos e descobrir novos caminhos."
-              : "Cadastre-se como cliente para solicitar e acompanhar aluguéis."}
+              ? "Entre com sua conta de cliente, empresa ou banco."
+              : "O cadastro público é para clientes. Empresas e bancos entram com uma conta criada pelo responsável pelo sistema."}
           </p>
 
           {notice && (
@@ -721,7 +721,7 @@ function AuthLayout({
                 ? "Aguarde..."
                 : mode === "login"
                   ? "Entrar"
-                  : "Criar conta"}
+                  : "Criar conta de cliente"}
 
               {!loading && (
                 <Icon name="arrow" size={17} />
@@ -742,7 +742,7 @@ function AuthLayout({
               }}
             >
               {mode === "login"
-                ? "Criar conta"
+                ? "Criar conta de cliente"
                 : "Entrar"}
             </button>
           </p>
@@ -841,13 +841,7 @@ function AppShell({
   </div>
 
   <div>
-    <strong>
-      {role === "CLIENTE"
-        ? usuarioLogado
-        : role === "EMPRESA"
-          ? "Vélora Empresas"
-          : "Banco Áureo"}
-    </strong>
+    <strong>{usuarioLogado}</strong>
     <span>{role}</span>
   </div>
 
@@ -970,6 +964,10 @@ function Dashboard({
           role === "CLIENTE" ? (
             <Button icon="arrow" onClick={() => go("catalog")}>
               Explorar veículos
+            </Button>
+          ) : role === "BANCO" ? (
+            <Button icon="arrow" onClick={() => go("bank-analysis")}>
+              Abrir análise financeira
             </Button>
           ) : undefined
         }
@@ -2145,7 +2143,7 @@ function BankAnalysis({
       </div>
       <section className="panel">
         <RentalTable
-          rentals={rentals.filter((r) => r.status !== "Cancelado")}
+          rentals={rentals.filter((r) => r.status !== "Cancelado").sort((a, b) => a.id - b.id)}
           vehicles={vehicles}
           onView={(id) => {
             select(id);

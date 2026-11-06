@@ -31,7 +31,9 @@ public class ContasAgentesConfig {
         var existente = usuarios.findByLogin(login);
         if (existente.isPresent()) {
             if (existente.get().getPerfil() != perfil) {
-                throw new IllegalArgumentException("Login já utilizado por outro perfil");
+                throw new IllegalArgumentException("O login de " + perfil
+                        + " já pertence ao perfil " + existente.get().getPerfil()
+                        + ". Configure outro login para a conta de agente.");
             }
             return;
         }
